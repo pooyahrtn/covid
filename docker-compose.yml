@@ -1,0 +1,22 @@
+version: '3.5'
+
+networks:
+  nginx:
+    external: true
+
+services:
+  autism-web:
+    build:
+      context: ./
+
+    ports:
+      - '3700:80'
+
+    environment:
+      - 'VIRTUAL_HOST=covid.pooyaharatian.me'
+      - 'LETSENCRYPT_HOST=covid.pooyaharatian.me'
+      - 'LETSENCRYPT_EMAIL=pooyaharatian@gmail.com'
+      - 'VIRTUAL_PORT=3700'
+
+    networks:
+      - nginx

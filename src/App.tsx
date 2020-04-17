@@ -1,26 +1,100 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
+import { RecordVoiceOver, InfoOutlined, Healing } from '@material-ui/icons';
+
+import {
+  makeStyles,
+  BottomNavigation,
+  AppBar,
+  Typography,
+  Theme,
+  createStyles,
+  ThemeProvider,
+  createMuiTheme,
+  Container,
+} from '@material-ui/core';
+import { Main, About, Reserve } from './routes';
+
+const useStyles = makeStyles((t: Theme) => {
+  return createStyles({
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+    },
+    title: {
+      flexGrow: 1,
+      textAlign: 'center',
+      margin: t.spacing(1),
+    },
+    bottomTab: {
+      width: 500,
+    },
+    footer: {
+      marginTop: 'auto',
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      boxShadow: t.shadows[3],
+    },
+  });
+});
+
+const theme = createMuiTheme({
+  direction: 'rtl',
+});
 
 function App() {
+  const [currentTabIndex, setCurrentTabIndex] = useState(1);
+
+  const classes = useStyles();
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={theme}>
+      <Container className={classes.root}>
+        <AppBar position="fixed">
+          <Typography variant="h6" className={classes.title}>
+            {currentTabName(currentTabIndex)}
+          </Typography>
+        </AppBar>
+        {currentTabIndex === 1 && <Main />}
+        {currentTabIndex === 0 && <About />}
+        {currentTabIndex === 2 && <Reserve />}
+        <footer className={classes.footer}>
+          <BottomNavigation
+            value={currentTabIndex}
+            onChange={(_, newValue) => {
+              setCurrentTabIndex(newValue);
+            }}
+            showLabels={true}
+          >
+            <BottomNavigationAction
+              label="درباره‌ی برنامه"
+              value={0}
+              icon={<InfoOutlined />}
+            />
+            <BottomNavigationAction
+              label="ضبط"
+              value={1}
+              icon={<RecordVoiceOver />}
+            />
+            <BottomNavigationAction label="رزرو" value={2} icon={<Healing />} />
+          </BottomNavigation>
+        </footer>
+      </Container>
+    </ThemeProvider>
   );
 }
+
+const currentTabName = (index: number) => {
+  switch (index) {
+    case 0:
+      return 'درباره‌ی برنامه';
+    case 1:
+      return 'ضبط صدا';
+    case 2:
+      return 'رزرو';
+  }
+};
 
 export default App;
