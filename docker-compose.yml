@@ -8,6 +8,7 @@ services:
   autism-web:
     build:
       context: ./
+      dockerfile: Dockerfile.dev
 
     ports:
       - '3700:80'

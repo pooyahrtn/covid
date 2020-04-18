@@ -7,6 +7,7 @@ import {
   Theme,
   createStyles,
   Button,
+  Typography,
 } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -22,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 2, 2),
     },
     actionContainer: {
+      marginTop: theme.spacing(2),
       display: 'flex',
     },
   })
@@ -30,9 +32,12 @@ const useStyles = makeStyles((theme: Theme) =>
 interface SendModalProps {
   open: boolean;
   handleClose: () => void;
+  data: any;
+  onSendPressed: () => void;
+  loading: boolean;
 }
 export default (props: SendModalProps) => {
-  const { open, handleClose } = props;
+  const { open, handleClose, data, onSendPressed, loading } = props;
   const classes = useStyles();
   return (
     <Modal
@@ -53,12 +58,24 @@ export default (props: SendModalProps) => {
           <p id="transition-modal-description">
             آیا صدای ضبط شده مورد تایید شماست؟
           </p>
-          <div className={classes.actionContainer}>
-            <Button variant="contained" color="primary">
-              بله
-            </Button>
-            <Button onClick={handleClose}>خیر</Button>
-          </div>
+          {data && (
+            <audio controls={true}>
+              <source src={data.blobURL} type="audio/wav" />
+            </audio>
+          )}
+          {!loading && (
+            <div className={classes.actionContainer}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={onSendPressed}
+              >
+                بله
+              </Button>
+              <Button onClick={handleClose}>خیر</Button>
+            </div>
+          )}
+          {loading && <Typography>در حال ارسال</Typography>}
         </div>
       </Fade>
     </Modal>

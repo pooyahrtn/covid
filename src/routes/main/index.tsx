@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   makeStyles,
@@ -10,6 +10,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Button,
 } from '@material-ui/core';
 import {
   CircularProgressbarWithChildren,
@@ -17,8 +18,10 @@ import {
 } from 'react-circular-progressbar';
 import { MicNone } from '@material-ui/icons';
 import SendModal from './SendModal';
+import { useRecorder } from './useRecord';
 
 import 'react-circular-progressbar/dist/styles.css';
+import { useSendFile } from './useSendFile';
 
 const useStyles = makeStyles((t: Theme) =>
   createStyles({
@@ -31,9 +34,9 @@ const useStyles = makeStyles((t: Theme) =>
     },
     recordContainer: {
       width: t.spacing(16),
-      marginTop: t.spacing(2),
       aspectRatio: '1',
       transition: 'all 1s',
+      marginTop: t.spacing(6),
     },
     recordContainerRecording: {
       transform: 'scale(1.2)',
@@ -48,67 +51,67 @@ const useStyles = makeStyles((t: Theme) =>
       display: 'flex',
       color: 'white',
     },
+    sentOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'white',
+      zIndex: 9999,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'column',
+    },
   })
 );
 
-type Disease = 'confirmed' | 'suspected' | 'other' | 'healthy';
-
-let lastRecordTime: Date;
-let intervalId: any;
-const totalLength = 5;
-const minimumRecordLength = 1;
-
-const calcProgress = () => {
-  const now = new Date();
-  const passedSeconds = (now.getTime() - lastRecordTime.getTime()) / 1000;
-  return (passedSeconds / totalLength) * 100;
-};
-
-const isRecordAcceptable = () => {
-  const now = new Date();
-  return (
-    (now.getTime() - lastRecordTime.getTime()) / 1000 > minimumRecordLength
-  );
-};
+type Disease =
+  | 'covid19_sickness'
+  | 'covid19_suspicious'
+  | 'another_sickness'
+  | 'healthy';
+type Mode = 'disease' | 'gender' | 'smoking' | 'record';
+type Gender = 'male' | 'female';
+type Smoking = 'smoker' | 'non_smoker';
 
 export default () => {
   const classes = useStyles();
   const [disease, setDisease] = useState<Disease>();
-  const [recordProgress, setRecordProgress] = useState(0);
+  const [sound, setSound] = useState();
   const [openSendModal, setOpenSendModal] = useState(false);
+  const [mode, setMode] = useState<Mode>('disease');
+  const [gender, setGender] = useState<Gender>();
+  const [smoking, setSmoking] = useState<Smoking>();
+  const [loadingSend, setLoadingSend] = useState(false);
+  const [sent, setSent] = useState(false);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDisease((event.target as any).value);
-  };
-
-  const [isRecording, setIsRecording] = useState<boolean>();
-
-  const stopRecording = () => {
-    // time to stop recording
-    // reset recording
-    setIsRecording(false);
-    setRecordProgress(0);
-    clearInterval(intervalId);
-    if (!isRecordAcceptable()) {
-      // record is too short
-      alert('مدت ضبط صدا کوتاه است، لطفا مجددا تلاش کنید');
-      return;
+    const value = (event.target as any).value;
+    if (mode === 'disease') {
+      setDisease(value);
+      setMode('gender');
+    } else if (mode === 'gender') {
+      setGender(value);
+      setMode('smoking');
+    } else if (mode === 'smoking') {
+      setSmoking(value);
+      setMode('record');
     }
-    // record is acceptable:
-    setOpenSendModal(true);
   };
 
-  const startRecording = () => {
-    // start recording
-    lastRecordTime = new Date();
-    setIsRecording(true);
-    intervalId = setInterval(() => {
-      const progress = calcProgress();
-      if (progress >= 100) {
-        return stopRecording();
-      }
-      setRecordProgress(progress);
-    }, 500);
-  };
+  const {
+    isRecording,
+    startRecording,
+    stopRecording,
+    recordProgress,
+  } = useRecorder({
+    onStopCompleted: (data) => {
+      setOpenSendModal(true);
+      setSound(data);
+    },
+  });
 
   const onRecordPressed = () => {
     if (isRecording) {
@@ -122,42 +125,125 @@ export default () => {
     setOpenSendModal(false);
   };
 
+  const { requestSend } = useSendFile();
+
+  const onSendPressed = () => {
+    setLoadingSend(true);
+    requestSend(sound, createFileName({ disease, smoking, gender })).then(
+      (res) => {
+        setLoadingSend(false);
+        setSent(true);
+      }
+    );
+  };
+  const onRestartPressed = () => {
+    setDisease(undefined);
+    setGender(undefined);
+    setSmoking(undefined);
+    setSent(false);
+    setLoadingSend(false);
+    setSound(undefined);
+    setOpenSendModal(false);
+    setMode('disease');
+  };
+
   return (
     <Container className={classes.contianer}>
-      <SendModal open={openSendModal} handleClose={closeSendModal} />
+      <SendModal
+        open={openSendModal}
+        handleClose={closeSendModal}
+        data={sound}
+        onSendPressed={onSendPressed}
+        loading={loadingSend}
+      />
+      {sent && (
+        <div className={classes.sentOverlay}>
+          با تشکر از شما، صدای ضبط شده ارسال شد.
+          <Button
+            variant="contained"
+            onClick={onRestartPressed}
+            color="primary"
+          >
+            شروع مجدد
+          </Button>
+        </div>
+      )}
       <Typography variant="body1" color="primary">
         با ضبط و ارسال صدای سرفه‌ی خود یا دیگران میتوانید به تحقیقات در جهت
         تخشیص سریع‌تر بیماری Covid-19 کمک نمایید.
       </Typography>
-      <FormControl component="fieldset" margin="normal">
-        <FormLabel component="legend">لطفا وضعیت خود را مشخص کنید</FormLabel>
-        <RadioGroup
-          aria-label="gender"
-          name="gender1"
-          value={disease}
-          onChange={handleChange}
-          className={classes.radioGroup}
-        >
-          <FormControlLabel
-            value="confirmed"
-            control={<Radio />}
-            label="تشخیص قطعی COVID-19"
-          />
-          <FormControlLabel
-            value="suspected"
-            control={<Radio />}
-            label="مشکوک به COVID-19"
-          />
-          <FormControlLabel
-            value="other"
-            control={<Radio />}
-            label="بیماری های دیگر"
-          />
+      {mode === 'disease' && (
+        <FormControl component="fieldset" margin="normal">
+          <FormLabel component="legend">لطفا وضعیت خود را مشخص کنید</FormLabel>
+          <RadioGroup
+            aria-label="gender"
+            name="gender1"
+            value={disease}
+            onChange={handleChange}
+            className={classes.radioGroup}
+          >
+            <FormControlLabel
+              value="covid19_sickness"
+              control={<Radio />}
+              label="تشخیص قطعی COVID-19"
+            />
+            <FormControlLabel
+              value="covid19_suspicious"
+              control={<Radio />}
+              label="مشکوک به COVID-19"
+            />
+            <FormControlLabel
+              value="another_sickness"
+              control={<Radio />}
+              label="بیماری های دیگر"
+            />
 
-          <FormControlLabel value="healthy" control={<Radio />} label="سالم" />
-        </RadioGroup>
-      </FormControl>
-      {disease && (
+            <FormControlLabel
+              value="healthy"
+              control={<Radio />}
+              label="سالم"
+            />
+          </RadioGroup>
+        </FormControl>
+      )}
+      {mode === 'gender' && (
+        <FormControl component="fieldset" margin="normal">
+          <FormLabel component="legend">لطفا جنسیت خود را مشخص کنید</FormLabel>
+          <RadioGroup
+            aria-label="gender"
+            name="gender1"
+            value={gender}
+            onChange={handleChange}
+            className={classes.radioGroup}
+          >
+            <FormControlLabel value="male" control={<Radio />} label="مرد" />
+            <FormControlLabel value="female" control={<Radio />} label="زن" />
+          </RadioGroup>
+        </FormControl>
+      )}
+      {mode === 'smoking' && (
+        <FormControl component="fieldset" margin="normal">
+          <FormLabel component="legend">
+            آیا سابقه‌ی مصرف سیگار دارید؟
+          </FormLabel>
+          <RadioGroup
+            aria-label="gender"
+            name="gender1"
+            value={smoking}
+            onChange={handleChange}
+            className={classes.radioGroup}
+          >
+            <FormControlLabel value="smoker" control={<Radio />} label="بله" />
+            <FormControlLabel
+              value="non_smoker"
+              control={<Radio />}
+              label="خیر"
+            />
+          </RadioGroup>
+        </FormControl>
+      )}
+
+      {mode === 'record' && (
         <RecordButton
           className={classes.recordContainer}
           onPress={onRecordPressed}
@@ -201,4 +287,13 @@ const RecordButton: React.FC<RecordButtonProps> = (props) => {
       </CircularProgressbarWithChildren>
     </Container>
   );
+};
+
+const createFileName = (data: {
+  disease: Disease;
+  smoking: Smoking;
+  gender: Gender;
+}) => {
+  const { smoking, disease, gender } = data;
+  return `$cough_$${gender}_$${smoking}_$${disease}_$${new Date().getTime()}_$web.wav`;
 };
