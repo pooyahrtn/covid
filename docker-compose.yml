@@ -8,10 +8,9 @@ services:
   autism-web:
     build:
       context: ./
-      dockerfile: Dockerfile.dev
 
     ports:
-      - '3700:3000'
+      - '3700:80'
 
     environment:
       - 'VIRTUAL_HOST=covid.pooyaharatian.me'
