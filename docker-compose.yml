@@ -11,7 +11,7 @@ services:
       dockerfile: Dockerfile.dev
 
     ports:
-      - '3700:80'
+      - '3700:3000'
 
     environment:
       - 'VIRTUAL_HOST=covid.pooyaharatian.me'
