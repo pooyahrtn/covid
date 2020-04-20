@@ -1,4 +1,5 @@
 import AudioContext from './AudioContext';
+import MediaRecorder from 'audio-recorder-polyfill';
 
 let analyser;
 let audioCtx;
@@ -47,7 +48,7 @@ export class MicrophoneRecorder {
       }
 
       if (audioCtx && mediaRecorder && mediaRecorder.state === 'inactive') {
-        mediaRecorder.start(10);
+        mediaRecorder.start();
         const source = audioCtx.createMediaStreamSource(stream);
         source.connect(analyser);
         if (onStartCallback) {
@@ -70,18 +71,25 @@ export class MicrophoneRecorder {
           onStartCallback();
         }
 
-        mediaRecorder.onstop = this.onStop;
-        mediaRecorder.ondataavailable = (event) => {
+        // mediaRecorder.onstop = this.onStop;
+        mediaRecorder.addEventListener('stop', () => this.onStop());
+        // mediaRecorder.ondataavailable = (event) => {
+        //   chunks.push(event.data);
+        //   if (onDataCallback) {
+        //     onDataCallback(event.data);
+        //   }
+        // };
+        mediaRecorder.addEventListener('dataavailable', (event) => {
           chunks.push(event.data);
           if (onDataCallback) {
             onDataCallback(event.data);
           }
-        };
+        });
 
         audioCtx = AudioContext.getAudioContext();
         audioCtx.resume().then(() => {
           analyser = AudioContext.getAnalyser();
-          mediaRecorder.start(10);
+          mediaRecorder.start();
           const sourceNode = audioCtx.createMediaStreamSource(stream);
           sourceNode.connect(analyser);
         });

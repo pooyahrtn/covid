@@ -268,7 +268,7 @@ const RecordButton: React.FC<RecordButtonProps> = (props) => {
     <Container
       className={`${className} ${
         isRecording ? classes.recordContainerRecording : ''
-        }`}
+      }`}
     >
       <CircularProgressbarWithChildren
         value={progress}
@@ -295,5 +295,5 @@ const createFileName = (data: {
   gender: Gender;
 }) => {
   const { smoking, disease, gender } = data;
-  return `$cough_$${gender}_$${smoking}_$${disease}_$${new Date().getTime()}_$web.wav`;
+  return `cough_$${gender}_${smoking}_${disease}_${new Date().getTime()}_web.wav`;
 };

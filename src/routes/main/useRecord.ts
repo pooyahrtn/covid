@@ -57,6 +57,7 @@ export const useRecorder = (config: UseRecordConfig) => {
   );
 
   const stopRecording = useCallback(() => {
+    console.warn('stop prressed');
     recorder.stopRecording();
   }, [recorder]);
 
