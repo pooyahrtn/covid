@@ -13,7 +13,7 @@ import {
   createMuiTheme,
   Container,
 } from '@material-ui/core';
-import { Main, About, Reserve } from './routes';
+import { Main, About } from './routes';
 
 const useStyles = makeStyles((t: Theme) => {
   return createStyles({
@@ -59,7 +59,6 @@ function App() {
         </AppBar>
         {currentTabIndex === 1 && <Main />}
         {currentTabIndex === 0 && <About />}
-        {currentTabIndex === 2 && <Reserve />}
         <footer className={classes.footer}>
           <BottomNavigation
             value={currentTabIndex}
@@ -78,7 +77,6 @@ function App() {
               value={1}
               icon={<RecordVoiceOver />}
             />
-            <BottomNavigationAction label="رزرو" value={2} icon={<Healing />} />
           </BottomNavigation>
         </footer>
       </Container>

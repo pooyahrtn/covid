@@ -8,16 +8,12 @@ export const useSendFile = () => {
     const data = new FormData();
     data.append('uploadedfile', audio.blob, fileName);
 
-    return axios.post(
-      'http://helpautism.ir/autism-android/New/upload.php?id=10005533',
-      data,
-      {
-        headers: {
-          'content-type': 'multipart/form-data',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
-    );
+    return axios.post('/autism-android/New/upload.php?id=10005533', data, {
+      headers: {
+        'content-type': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   };
   return { requestSend, loading };
 };
