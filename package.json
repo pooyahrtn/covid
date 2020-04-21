@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "proxy": "http://helpautism.ir",
-  "homepage": "http://helpautism.ir/covid",
+  // "homepage": "http://helpautism.ir/covid",
   "dependencies": {
     "@material-ui/core": "^4.9.10",
     "@material-ui/icons": "^4.9.1",
