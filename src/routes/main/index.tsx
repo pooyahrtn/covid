@@ -295,5 +295,5 @@ const createFileName = (data: {
   gender: Gender;
 }) => {
   const { smoking, disease, gender } = data;
-  return `cough_$${gender}_${smoking}_${disease}_${new Date().getTime()}_web.wav`;
+  return `cough_${gender}_${smoking}_${disease}_${new Date().getTime()}_web.wav`;
 };

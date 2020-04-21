@@ -12,8 +12,16 @@ export default () => {
   return (
     <Container className={classes.contianer}>
       <div className={classes.imageHeader}>
-        <img src="robotic.png" alt="robotic" className={classes.logoImage} />
-        <img src="tehran.png" alt="tehran" className={classes.logoImage} />
+        <img
+          src={`${process.env.PUBLIC_URL}/robotic.png`}
+          alt="robotic"
+          className={classes.logoImage}
+        />
+        <img
+          src={`${process.env.PUBLIC_URL}/tehran.png`}
+          alt="tehran"
+          className={classes.logoImage}
+        />
       </div>
       <Typography align="center">
         این برنامه توسط تیم تحقیقاتی ما در آزمایشگاه ربات و هوش مصنوعی دانشگاه

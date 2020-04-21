@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
-import { RecordVoiceOver, InfoOutlined, Healing } from '@material-ui/icons';
+import { RecordVoiceOver, InfoOutlined } from '@material-ui/icons';
 
 import {
   makeStyles,
